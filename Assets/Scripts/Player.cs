@@ -11,6 +11,7 @@ public class Player : MonoBehaviour
 
    public float gravity = -9.8f;
    public float strength = 5f;
+   public float tilt = 5f;
 
    private void Awake() 
    {
@@ -20,6 +21,14 @@ public class Player : MonoBehaviour
    private void Start() 
    {
        InvokeRepeating(nameof(AnimateSprite), 0.15f, 0.15f); // calls the animatesprite function every 0.15 seconds
+   }
+
+   private void OnEnable() 
+   {
+       Vector3 position = transform.position;
+       position.y = 0f;
+       transform.position = position;
+       direction = Vector3.zero;
    }
 
    private void Update() 
@@ -41,6 +50,10 @@ public class Player : MonoBehaviour
         
         direction.y += gravity * Time.deltaTime;
         transform.position += direction * Time.deltaTime;
+
+        Vector3 rotation = transform.eulerAngles;
+        rotation.z = direction.y * tilt;
+        transform.eulerAngles = rotation;
        }
     
     private void AnimateSprite() // increasing the index and then reassigning the sprite on sprite renderer based on the sprite index in array
@@ -53,6 +66,18 @@ public class Player : MonoBehaviour
         }
 
         spriteRenderer.sprite = sprites[spriteIndex]; // update sprites
+    }
+
+    private void OnTriggerEnter2D(Collider2D other) // we can now check what is the tag of the object and whether to add score or death
+    {
+        if (other.gameObject.tag == "Obstacle")
+        {
+            FindObjectOfType<GameManager>().GameOver(); // this is an expensive function and usually are better ways to get a reference to our game manager
+        }
+        else if (other.gameObject.tag == "Scoring")
+        {
+            FindObjectOfType<GameManager>().IncreaseScore();
+        }
     }
 
 
